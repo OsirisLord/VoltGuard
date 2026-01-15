@@ -1,0 +1,22 @@
+# set the directory Pyrefly will search for files to type check
+project-includes = [
+    "config", "core", "gui", "main.py"
+]
+
+# Override default excludes to allow checking within .gemini directory
+project-excludes = [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/venv"
+]
+disable-project-excludes-heuristics = true
+
+# manually set the `sys.platform` Pyrefly will assume when type checking
+python-platform = "win32"
+
+# a table mapping error codes to an `is-enabled` boolean
+[errors]
+# disable `bad-assignment` errors
+bad-assignment = false
+# disable `bad-return` errors
+bad-return = false
