@@ -3,19 +3,24 @@ Input frame for cable sizing calculator.
 
 Contains all input fields for user parameters with enhanced options.
 """
+
 import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import customtkinter as ctk
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# pylint: disable=wrong-import-position, import-error
+# pylint: disable=wrong-import-position, import-error, too-many-instance-attributes, too-many-statements
 from core.models import (
-    CableInput, Material, InsulationType, InstallationMethod,
-    PhaseSystem, BurialDepth
+    CableInput,
+    Material,
+    InsulationType,
+    InstallationMethod,
+    PhaseSystem,
+    BurialDepth,
 )
 from gui.tooltip import Tooltip
 
@@ -24,10 +29,7 @@ class InputFrame(ctk.CTkScrollableFrame):
     """Scrollable frame containing all input fields."""
 
     def __init__(
-        self,
-        master: Any,
-        on_calculate: Callable[[CableInput], None],
-        **kwargs
+        self, master: Any, on_calculate: Callable[[CableInput], None], **kwargs
     ):
         """
         Initialize input frame.
@@ -46,8 +48,7 @@ class InputFrame(ctk.CTkScrollableFrame):
         """Create all input widgets."""
         # === Load Parameters Section ===
         self.load_label = ctk.CTkLabel(
-            self, text="Load Parameters",
-            font=ctk.CTkFont(size=14, weight="bold")
+            self, text="Load Parameters", font=ctk.CTkFont(size=14, weight="bold")
         )
 
         self.current_label = ctk.CTkLabel(self, text="Design Current (A):")
@@ -61,72 +62,69 @@ class InputFrame(ctk.CTkScrollableFrame):
         self.pf_entry.insert(0, "0.85")
 
         # Tooltips for Load Parameters
-        Tooltip(self.current_label, "The full load current of the circuit in Amperes (A).")
+        Tooltip(
+            self.current_label, "The full load current of the circuit in Amperes (A)."
+        )
         Tooltip(self.length_label, "One-way length of the cable run in meters (m).")
         Tooltip(
             self.pf_label,
             "Power Factor (cos φ) of the load.\n"
-            "Typical values: 0.8 to 0.9 for motors, 1.0 for resistive."
+            "Typical values: 0.8 to 0.9 for motors, 1.0 for resistive.",
         )
 
         # === System Configuration Section ===
         self.config_label = ctk.CTkLabel(
-            self, text="System Configuration",
-            font=ctk.CTkFont(size=14, weight="bold")
+            self, text="System Configuration", font=ctk.CTkFont(size=14, weight="bold")
         )
 
         # Material
         self.material_label = ctk.CTkLabel(self, text="Material:")
         self.material_var = ctk.StringVar(value="Copper")
         self.material_menu = ctk.CTkOptionMenu(
-            self, values=["Copper", "Aluminum"],
-            variable=self.material_var
+            self, values=["Copper", "Aluminum"], variable=self.material_var
         )
 
         # Insulation
         self.insulation_label = ctk.CTkLabel(self, text="Insulation:")
         self.insulation_var = ctk.StringVar(value="XLPE 90°C")
         self.insulation_menu = ctk.CTkOptionMenu(
-            self, values=["XLPE 90°C", "PVC 70°C"],
-            variable=self.insulation_var
+            self, values=["XLPE 90°C", "PVC 70°C"], variable=self.insulation_var
         )
 
         # Installation method
         self.install_label = ctk.CTkLabel(self, text="Installation:")
         self.install_var = ctk.StringVar(value="Method C - Wall")
         self.install_menu = ctk.CTkOptionMenu(
-            self, values=[
+            self,
+            values=[
                 "Method C - Wall",
                 "Method D - Buried",
                 "Method E - Tray",
-                "Method F - Ladder"
+                "Method F - Ladder",
             ],
             variable=self.install_var,
-            command=self._on_install_change
+            command=self._on_install_change,
         )
 
         # Burial depth (only for Method D)
         self.depth_label = ctk.CTkLabel(self, text="Burial Depth:")
         self.depth_var = ctk.StringVar(value="0.7m")
         self.depth_menu = ctk.CTkOptionMenu(
-            self, values=["0.5m", "0.7m", "1.0m"],
-            variable=self.depth_var
+            self, values=["0.5m", "0.7m", "1.0m"], variable=self.depth_var
         )
 
         # Phase system
         self.phase_label = ctk.CTkLabel(self, text="Phase System:")
         self.phase_var = ctk.StringVar(value="3-Phase 400V")
         self.phase_menu = ctk.CTkOptionMenu(
-            self, values=["3-Phase 400V", "1-Phase 230V"],
-            variable=self.phase_var
+            self, values=["3-Phase 400V", "1-Phase 230V"], variable=self.phase_var
         )
 
         # Parallel runs
         self.parallel_label = ctk.CTkLabel(self, text="Parallel Cables:")
         self.parallel_var = ctk.StringVar(value="1")
         self.parallel_menu = ctk.CTkOptionMenu(
-            self, values=["1", "2", "3", "4"],
-            variable=self.parallel_var
+            self, values=["1", "2", "3", "4"], variable=self.parallel_var
         )
 
         # Tooltips for System Configuration
@@ -134,13 +132,13 @@ class InputFrame(ctk.CTkScrollableFrame):
             self.material_label,
             "Conductor material.\n"
             "Copper: Better conductivity, smaller size.\n"
-            "Aluminum: Cheaper, lighter, larger size."
+            "Aluminum: Cheaper, lighter, larger size.",
         )
         Tooltip(
             self.insulation_label,
             "Cable insulation type.\n"
             "XLPE: 90°C rating (higher capacity).\n"
-            "PVC: 70°C rating (standard)."
+            "PVC: 70°C rating (standard).",
         )
         Tooltip(
             self.install_label,
@@ -148,20 +146,22 @@ class InputFrame(ctk.CTkScrollableFrame):
             "C: Clipped direct\n"
             "D: Buried in ground\n"
             "E: Perforated tray\n"
-            "F: Free air/ladder"
+            "F: Free air/ladder",
         )
         Tooltip(
             self.depth_label,
             "Depth of burial (only for grounded cables).\n"
-            "Deeper cables have lower rating due to soil insulation."
+            "Deeper cables have lower rating due to soil insulation.",
         )
         Tooltip(self.phase_label, "System voltage and phase configuration.")
-        Tooltip(self.parallel_label, "Number of cables per phase to increase total capacity.")
+        Tooltip(
+            self.parallel_label,
+            "Number of cables per phase to increase total capacity.",
+        )
 
         # === Derating Factors Section ===
         self.derating_label = ctk.CTkLabel(
-            self, text="Derating Factors",
-            font=ctk.CTkFont(size=14, weight="bold")
+            self, text="Derating Factors", font=ctk.CTkFont(size=14, weight="bold")
         )
 
         self.temp_label = ctk.CTkLabel(self, text="Temperature (Kt):")
@@ -177,27 +177,25 @@ class InputFrame(ctk.CTkScrollableFrame):
         self.soil_entry.insert(0, "1.0")
 
         # Tooltips for Derating Factors
-        # Tooltips for Derating Factors
         Tooltip(
             self.temp_label,
             "Ambient Temperature Correction Factor (Kt).\n"
-            "< 1.0 if temp > 30°C (Air) or > 20°C (Ground)."
+            "< 1.0 if temp > 30°C (Air) or > 20°C (Ground).",
         )
         Tooltip(
             self.group_label,
             "Group Rating Factor (Kg).\n"
-            "Reduces capacity when multiple circuits are bundled together."
+            "Reduces capacity when multiple circuits are bundled together.",
         )
         Tooltip(
             self.soil_label,
             "Soil Thermal Resistivity Factor (Ks).\n"
-            "Adjust for soil conditions different from 2.5 K.m/W."
+            "Adjust for soil conditions different from 2.5 K.m/W.",
         )
 
         # === Short-Circuit Section ===
         self.sc_label = ctk.CTkLabel(
-            self, text="Short-Circuit",
-            font=ctk.CTkFont(size=14, weight="bold")
+            self, text="Short-Circuit", font=ctk.CTkFont(size=14, weight="bold")
         )
 
         self.isc_label = ctk.CTkLabel(self, text="SC Current (kA):")
@@ -206,24 +204,22 @@ class InputFrame(ctk.CTkScrollableFrame):
         self.fault_label = ctk.CTkLabel(self, text="Fault Time (s):")
         self.fault_entry = ctk.CTkEntry(self, placeholder_text="1.0")
         self.fault_entry.insert(0, "1.0")
-        
-        # Tooltips for Short-Circuit
+
         # Tooltips for Short-Circuit
         Tooltip(
             self.isc_label,
             "Propspective Short-Circuit Current (Isc) in kA.\n"
-            "Used to verify cable thermal withstand."
+            "Used to verify cable thermal withstand.",
         )
         Tooltip(
             self.fault_label,
             "Duration of the short-circuit fault in seconds.\n"
-            "Typically determined by protection device clearing time."
+            "Typically determined by protection device clearing time.",
         )
 
         # === Cost Section ===
         self.cost_label = ctk.CTkLabel(
-            self, text="Cost Estimation",
-            font=ctk.CTkFont(size=14, weight="bold")
+            self, text="Cost Estimation", font=ctk.CTkFont(size=14, weight="bold")
         )
 
         self.cost_override_label = ctk.CTkLabel(self, text="Custom $/m:")
@@ -231,15 +227,15 @@ class InputFrame(ctk.CTkScrollableFrame):
 
         # Calculate button
         self.calculate_btn = ctk.CTkButton(
-            self, text="⚡ Calculate",
+            self,
+            text="⚡ Calculate",
             font=ctk.CTkFont(size=16, weight="bold"),
-            height=45, command=self._on_calculate_click
+            height=45,
+            command=self._on_calculate_click,
         )
 
         # Error label
-        self.error_label = ctk.CTkLabel(
-            self, text="", text_color="red", wraplength=280
-        )
+        self.error_label = ctk.CTkLabel(self, text="", text_color="red", wraplength=280)
 
     def _layout_widgets(self) -> None:
         """Layout all widgets using grid."""
@@ -262,7 +258,9 @@ class InputFrame(ctk.CTkScrollableFrame):
         row += 1
 
         # System configuration
-        self.config_label.grid(row=row, column=0, columnspan=2, pady=(15, 5), sticky="w")
+        self.config_label.grid(
+            row=row, column=0, columnspan=2, pady=(15, 5), sticky="w"
+        )
         row += 1
 
         self.material_label.grid(row=row, column=0, padx=5, pady=3, sticky="e")
@@ -291,7 +289,9 @@ class InputFrame(ctk.CTkScrollableFrame):
         row += 1
 
         # Derating factors
-        self.derating_label.grid(row=row, column=0, columnspan=2, pady=(15, 5), sticky="w")
+        self.derating_label.grid(
+            row=row, column=0, columnspan=2, pady=(15, 5), sticky="w"
+        )
         row += 1
 
         self.temp_label.grid(row=row, column=0, padx=5, pady=3, sticky="e")
@@ -330,7 +330,9 @@ class InputFrame(ctk.CTkScrollableFrame):
         self.error_label.grid(row=row, column=0, columnspan=2, pady=(10, 5))
         row += 1
 
-        self.calculate_btn.grid(row=row, column=0, columnspan=2, pady=(5, 15), padx=10, sticky="ew")
+        self.calculate_btn.grid(
+            row=row, column=0, columnspan=2, pady=(5, 15), padx=10, sticky="ew"
+        )
 
         self.columnconfigure(1, weight=1)
 
@@ -346,66 +348,81 @@ class InputFrame(ctk.CTkScrollableFrame):
             self.depth_label.grid_remove()
             self.depth_menu.grid_remove()
 
-    def _parse_input(self, entry: ctk.CTkEntry, name: str, default_val: float = None) -> float:
+    def _parse_input(
+        self, entry: ctk.CTkEntry, name: str, default_val: Optional[float] = None
+    ) -> float:
         """
         Parse float value from entry with validation.
-        
+
         Args:
             entry: Entry widget to read from.
             name: Display name for error messages.
             default_val: Value to use if entry is empty. If None, field is required.
-            
+
         Returns:
             Parsed float value.
-            
+
         Raises:
             ValueError: If input is invalid or missing (and no default).
         """
         text = entry.get().strip()
-        
+
         if not text:
             if default_val is not None:
                 return default_val
             raise ValueError(f"{name} is required.")
-            
+
         try:
             return float(text)
-        except ValueError:
-            raise ValueError(f"{name} must be a valid number.")
+        except ValueError as e:
+            raise ValueError(f"{name} must be a valid number.") from e
 
     def _on_calculate_click(self) -> None:
         """Handle calculate button click."""
+        # pylint: disable=too-many-locals
         self.error_label.configure(text="")
 
         try:
             # Parse inputs with strict validation
             design_current = self._parse_input(self.current_entry, "Design Current")
             cable_length = self._parse_input(self.length_entry, "Cable Length")
-            
+
             # Parse inputs with defaults
             pf = self._parse_input(self.pf_entry, "Power Factor", default_val=0.85)
-            kt = self._parse_input(self.temp_entry, "Temperature Factor", default_val=1.0)
+            kt = self._parse_input(
+                self.temp_entry, "Temperature Factor", default_val=1.0
+            )
             kg = self._parse_input(self.group_entry, "Grouping Factor", default_val=1.0)
             ks = self._parse_input(self.soil_entry, "Soil Factor", default_val=1.0)
-            
-            isc = self._parse_input(self.isc_entry, "Short-Circuit Current", default_val=0.0)
-            fault_time = self._parse_input(self.fault_entry, "Fault Time", default_val=1.0)
-            
+
+            isc = self._parse_input(
+                self.isc_entry, "Short-Circuit Current", default_val=0.0
+            )
+            fault_time = self._parse_input(
+                self.fault_entry, "Fault Time", default_val=1.0
+            )
+
             # Optional cost
             cost_text = self.cost_override_entry.get().strip()
             cost_override = None
             if cost_text:
                 try:
                     cost_override = float(cost_text)
-                except ValueError:
-                    raise ValueError("Cost must be a valid number.")
+                except ValueError as e:
+                    raise ValueError("Cost must be a valid number.") from e
 
             # Parse enums
-            material = (Material.COPPER if self.material_var.get() == "Copper"
-                       else Material.ALUMINUM)
+            material = (
+                Material.COPPER
+                if self.material_var.get() == "Copper"
+                else Material.ALUMINUM
+            )
 
-            insulation = (InsulationType.XLPE_90C if "XLPE" in self.insulation_var.get()
-                         else InsulationType.PVC_70C)
+            insulation = (
+                InsulationType.XLPE_90C
+                if "XLPE" in self.insulation_var.get()
+                else InsulationType.PVC_70C
+            )
 
             install_val = self.install_var.get()
             if "Method C" in install_val:
@@ -425,8 +442,11 @@ class InputFrame(ctk.CTkScrollableFrame):
             else:
                 burial_depth = BurialDepth.DEPTH_0_7M
 
-            phase_system = (PhaseSystem.THREE_PHASE if "3-Phase" in self.phase_var.get()
-                           else PhaseSystem.SINGLE_PHASE)
+            phase_system = (
+                PhaseSystem.THREE_PHASE
+                if "3-Phase" in self.phase_var.get()
+                else PhaseSystem.SINGLE_PHASE
+            )
 
             parallel_runs = int(self.parallel_var.get())
 
@@ -438,7 +458,7 @@ class InputFrame(ctk.CTkScrollableFrame):
                 temp_factor=kt,
                 group_factor=kg,
                 soil_factor=ks,
-                short_circuit_current=isc * 1000, # Convert kA to A
+                short_circuit_current=isc * 1000,  # Convert kA to A
                 fault_time=fault_time,
                 material=material,
                 insulation=insulation,

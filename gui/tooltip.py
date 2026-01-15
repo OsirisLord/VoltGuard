@@ -3,6 +3,7 @@ Tooltip component for CustomTkinter widgets.
 
 Provides a floating window with explanatory text when hovering over a widget.
 """
+
 import customtkinter as ctk
 import tkinter as tk
 
@@ -10,7 +11,7 @@ import tkinter as tk
 class Tooltip:
     """
     A tooltip that appears when hovering over a widget.
-    
+
     Displays text in a small floating window near the mouse pointer.
     """
 
@@ -65,7 +66,7 @@ class Tooltip:
             text_color="white",
             padx=10,
             pady=5,
-            font=ctk.CTkFont(size=12)
+            font=ctk.CTkFont(size=12),
         )
         label.pack()
 

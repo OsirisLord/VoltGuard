@@ -1,4 +1,5 @@
 """Core module for cable sizing calculations."""
+
 from core.models import (
     CableInput,
     CableResult,

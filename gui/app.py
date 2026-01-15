@@ -3,10 +3,10 @@ Main application window for cable sizing calculator.
 
 Coordinates all GUI components and handles the main application logic.
 """
+
 import sys
 from pathlib import Path
 from typing import Optional
-from tkinter import messagebox
 
 import customtkinter as ctk
 from PIL import Image
@@ -14,6 +14,7 @@ from PIL import Image
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# pylint: disable=wrong-import-position, too-many-instance-attributes
 from core.models import CableInput
 from core.calculator import CableSizingCalculator
 from core.export import export_to_csv, export_to_pdf
@@ -59,48 +60,50 @@ class CableSizingApp(ctk.CTk):
         """Create all main widgets."""
         # Header
         self.header_frame = ctk.CTkFrame(self, height=80, corner_radius=0)
-        
+
         # Load logo
+        # pylint: disable=protected-access
         if hasattr(sys, "_MEIPASS"):
-            assets_path = Path(sys._MEIPASS) / "assets"
+            assets_path = Path(sys._MEIPASS) / "assets"  # type: ignore
         else:
             assets_path = Path(__file__).parent.parent / "assets"
-            
+
         logo_path = assets_path / "logo_banner.png"
-        
+
         try:
             pil_image = Image.open(logo_path)
             # Maintain aspect ratio, height around 60
             aspect_ratio = pil_image.width / pil_image.height
             logo_height = 60
             logo_width = int(logo_height * aspect_ratio)
-            
+
             self.logo_image = ctk.CTkImage(
                 light_image=pil_image,
                 dark_image=pil_image,
-                size=(logo_width, logo_height)
+                size=(logo_width, logo_height),
             )
-            
+
             self.title_label = ctk.CTkLabel(
-                self.header_frame,
-                text="",
-                image=self.logo_image
+                self.header_frame, text="", image=self.logo_image
             )
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             # Fallback if image fails
             self.title_label = ctk.CTkLabel(
                 self.header_frame,
                 text="⚡ VoltGuard",
-                font=ctk.CTkFont(size=24, weight="bold")
+                font=ctk.CTkFont(size=24, weight="bold"),
             )
 
         # Removed text subtitle as it's in the logo
 
         self.theme_var = ctk.StringVar(value="dark")
         self.theme_switch = ctk.CTkSwitch(
-            self.header_frame, text="Dark Mode",
-            variable=self.theme_var, onvalue="dark", offvalue="light",
-            command=self._toggle_theme
+            self.header_frame,
+            text="Dark Mode",
+            variable=self.theme_var,
+            onvalue="dark",
+            offvalue="light",
+            command=self._toggle_theme,
         )
 
         # Content
@@ -124,9 +127,10 @@ class CableSizingApp(ctk.CTk):
         self.footer_frame = ctk.CTkFrame(self, height=30, corner_radius=0)
         self.disclaimer_label = ctk.CTkLabel(
             self.footer_frame,
-            text="⚠️ Disclaimer: For preliminary design only. Verify with manufacturer data and local regulations.",
+            text="⚠️ Disclaimer: For preliminary design only. "
+            "Verify with manufacturer data and local regulations.",
             font=ctk.CTkFont(size=10),
-            text_color="gray"
+            text_color="gray",
         )
 
     def _layout_widgets(self) -> None:
@@ -190,7 +194,30 @@ class CableSizingApp(ctk.CTk):
             ampacities=ampacities,
             design_current=inputs.design_current,
             recommended_index=recommended_index,
-            costs=costs
+            costs=costs,
+        )
+
+    def _show_message(self, title: str, message: str, is_error: bool = False) -> None:
+        """Show a custom message box."""
+        dialog = ctk.CTkToplevel(self)
+        dialog.title(title)
+        dialog.geometry("400x200")
+        dialog.resizable(False, False)
+        dialog.transient(self)
+        dialog.grab_set()
+
+        # Center dialog relative to main window
+        self.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() // 2) - 200
+        y = self.winfo_y() + (self.winfo_height() // 2) - 100
+        dialog.geometry(f"+{x}+{y}")
+
+        icon = "❌" if is_error else "ℹ️"
+        ctk.CTkLabel(dialog, text=f"{icon} {message}", wraplength=350).pack(
+            expand=True, padx=20, pady=20
+        )
+        ctk.CTkButton(dialog, text="OK", command=dialog.destroy, width=100).pack(
+            pady=(0, 20)
         )
 
     def _export_csv(self, filepath: str) -> None:
@@ -198,18 +225,22 @@ class CableSizingApp(ctk.CTk):
         if self._last_report:
             try:
                 export_to_csv(self._last_report, filepath)
-                messagebox.showinfo("Export Complete", f"CSV saved to:\n{filepath}")
-            except Exception as e:
-                messagebox.showerror("Export Error", f"Failed to export CSV:\n{str(e)}")
+                self._show_message("Export Complete", f"CSV saved to:\n{filepath}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                self._show_message(
+                    "Export Error", f"Failed to export CSV:\n{str(e)}", is_error=True
+                )
 
     def _export_pdf(self, filepath: str) -> None:
         """Export results to PDF."""
         if self._last_report:
             try:
                 export_to_pdf(self._last_report, filepath)
-                messagebox.showinfo("Export Complete", f"PDF saved to:\n{filepath}")
-            except Exception as e:
-                messagebox.showerror("Export Error", f"Failed to export PDF:\n{str(e)}")
+                self._show_message("Export Complete", f"PDF saved to:\n{filepath}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                self._show_message(
+                    "Export Error", f"Failed to export PDF:\n{str(e)}", is_error=True
+                )
 
     def run(self) -> None:
         """Run the application main loop."""

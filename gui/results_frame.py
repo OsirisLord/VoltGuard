@@ -3,10 +3,11 @@ Results frame for cable sizing calculator.
 
 Displays calculation results with export functionality.
 """
+
 import sys
 from pathlib import Path
 from tkinter import filedialog
-from typing import List, Optional, Callable
+from typing import Any, List, Optional, Callable
 
 import customtkinter as ctk
 
@@ -22,10 +23,10 @@ class ResultsFrame(ctk.CTkFrame):
 
     def __init__(
         self,
-        master: ctk.CTk,
+        master: Any,
         on_export_csv: Optional[Callable[[str], None]] = None,
         on_export_pdf: Optional[Callable[[str], None]] = None,
-        **kwargs
+        **kwargs,
     ):
         """Initialize results frame."""
         super().__init__(master, **kwargs)
@@ -41,33 +42,32 @@ class ResultsFrame(ctk.CTkFrame):
         # Title and export buttons
         self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.title_label = ctk.CTkLabel(
-            self.header_frame, text="Calculation Results",
-            font=ctk.CTkFont(size=18, weight="bold")
+            self.header_frame,
+            text="Calculation Results",
+            font=ctk.CTkFont(size=18, weight="bold"),
         )
         self.export_csv_btn = ctk.CTkButton(
-            self.header_frame, text="📊 CSV", width=70,
-            command=self._on_export_csv
+            self.header_frame, text="📊 CSV", width=70, command=self._on_export_csv
         )
         self.export_pdf_btn = ctk.CTkButton(
-            self.header_frame, text="📄 PDF", width=70,
-            command=self._on_export_pdf
+            self.header_frame, text="📄 PDF", width=70, command=self._on_export_pdf
         )
 
         # Recommendation panel
         self.rec_frame = ctk.CTkFrame(self, fg_color=("gray85", "gray20"))
         self.rec_title = ctk.CTkLabel(
-            self.rec_frame, text="Recommended Cable Size",
-            font=ctk.CTkFont(size=14, weight="bold")
+            self.rec_frame,
+            text="Recommended Cable Size",
+            font=ctk.CTkFont(size=14, weight="bold"),
         )
         self.rec_size_label = ctk.CTkLabel(
-            self.rec_frame, text="--",
+            self.rec_frame,
+            text="--",
             font=ctk.CTkFont(size=28, weight="bold"),
-            text_color=("#1a73e8", "#4da6ff")
+            text_color=("#1a73e8", "#4da6ff"),
         )
         self.rec_details_label = ctk.CTkLabel(
-            self.rec_frame,
-            text="Enter parameters and click Calculate",
-            wraplength=350
+            self.rec_frame, text="Enter parameters and click Calculate", wraplength=350
         )
 
         # Results table
@@ -75,15 +75,25 @@ class ResultsFrame(ctk.CTkFrame):
 
         # Table headers
         self.headers = [
-            "Size", "Ampacity", "VD%", "MCB", "Zs", "Cost",
-            "Amp", "VD", "SC", "Status"
+            "Size",
+            "Ampacity",
+            "VD%",
+            "MCB",
+            "Zs",
+            "Cost",
+            "Amp",
+            "VD",
+            "SC",
+            "Status",
         ]
         self.header_labels: List[ctk.CTkLabel] = []
         for header in self.headers:
             width = 85 if header == "Cost" else 55
             label = ctk.CTkLabel(
-                self.table_frame, text=header,
-                font=ctk.CTkFont(weight="bold"), width=width
+                self.table_frame,
+                text=header,
+                font=ctk.CTkFont(weight="bold"),
+                width=width,
             )
             self.header_labels.append(label)
 
@@ -91,7 +101,9 @@ class ResultsFrame(ctk.CTkFrame):
             if header == "Amp":
                 Tooltip(label, "Effective Ampacity (A) after derating.")
             elif header == "VD":
-                Tooltip(label, "Voltage Drop (%).\nLimit: 3% for lighting, 5% for other.")
+                Tooltip(
+                    label, "Voltage Drop (%).\nLimit: 3% for lighting, 5% for other."
+                )
             elif header == "MCB":
                 Tooltip(label, "Resulting MCB/Breaker rating (A).")
             elif header == "Zs":
@@ -135,7 +147,7 @@ class ResultsFrame(ctk.CTkFrame):
             filepath = filedialog.asksaveasfilename(
                 defaultextension=".csv",
                 filetypes=[("CSV files", "*.csv")],
-                title="Export to CSV"
+                title="Export to CSV",
             )
             if filepath:
                 self.on_export_csv(filepath)
@@ -146,7 +158,7 @@ class ResultsFrame(ctk.CTkFrame):
             filepath = filedialog.asksaveasfilename(
                 defaultextension=".pdf",
                 filetypes=[("PDF files", "*.pdf")],
-                title="Export to PDF"
+                title="Export to PDF",
             )
             if filepath:
                 self.on_export_pdf(filepath)
@@ -156,9 +168,7 @@ class ResultsFrame(ctk.CTkFrame):
         self._report = report
 
     def update_results(
-        self,
-        results: List[CableResult],
-        recommended: Optional[CableResult]
+        self, results: List[CableResult], recommended: Optional[CableResult]
     ) -> None:
         """Update the results display."""
         self._clear_results()
@@ -209,9 +219,11 @@ class ResultsFrame(ctk.CTkFrame):
                 # Increase width for Cost column (index 5)
                 width = 85 if col == 5 else 55
                 label = ctk.CTkLabel(
-                    self.table_frame, text=value, width=width,
+                    self.table_frame,
+                    text=value,
+                    width=width,
                     text_color=text_color if col >= 6 else None,
-                    font=ctk.CTkFont(weight="bold") if is_recommended else None
+                    font=ctk.CTkFont(weight="bold") if is_recommended else None,
                 )
                 label.grid(row=row_idx, column=col, padx=1, pady=1, sticky="ew")
                 row_labels.append(label)

@@ -3,6 +3,7 @@ Data models for cable sizing calculations.
 
 Contains dataclasses for input parameters and calculation results.
 """
+
 import math
 from dataclasses import dataclass, field
 from enum import Enum
@@ -11,18 +12,21 @@ from typing import Optional, List
 
 class Material(Enum):
     """Conductor material type."""
+
     COPPER = "copper"
     ALUMINUM = "aluminum"
 
 
 class InsulationType(Enum):
     """Cable insulation type."""
+
     XLPE_90C = "XLPE 90°C"
     PVC_70C = "PVC 70°C"
 
 
 class InstallationMethod(Enum):
     """Cable installation method per IEC 60364-5-52."""
+
     METHOD_C = "Method C - Clipped direct to wall"
     METHOD_D = "Method D - Direct buried"
     METHOD_E = "Method E - Perforated cable tray"
@@ -31,12 +35,14 @@ class InstallationMethod(Enum):
 
 class PhaseSystem(Enum):
     """Electrical phase system."""
+
     THREE_PHASE = "3-phase"
     SINGLE_PHASE = "single-phase"
 
 
 class BurialDepth(Enum):
     """Burial depth for Method D installation."""
+
     DEPTH_0_5M = "0.5m"
     DEPTH_0_7M = "0.7m"
     DEPTH_1_0M = "1.0m"
@@ -78,7 +84,7 @@ class CableInput:
     @property
     def sin_phi(self) -> float:
         """Calculate sin of power factor angle."""
-        return math.sqrt(1 - self.power_factor ** 2)
+        return math.sqrt(1 - self.power_factor**2)
 
     @property
     def current_per_cable(self) -> float:
@@ -113,7 +119,7 @@ class CableInput:
 class CableResult:
     """Result of cable sizing calculation for a specific size."""
 
-    size: int  # Cable cross-section in mm²
+    size: float  # Cable cross-section in mm²
     effective_ampacity: float  # Iz_eff in Amperes (after derating)
     voltage_drop_percent: float  # ΔV as percentage
     min_sc_area: float  # Minimum area for short-circuit withstand in mm²
@@ -146,8 +152,10 @@ class CalculationReport:
     results: List[CableResult]
     recommended: Optional[CableResult]
     timestamp: str = ""
-    disclaimer: str = field(default_factory=lambda: (
-        "DISCLAIMER: This calculation is based on IEC 60364-5-52 guidelines. "
-        "Always verify cable specifications with manufacturer data and local "
-        "regulations. This tool is for preliminary design purposes only."
-    ))
+    disclaimer: str = field(
+        default_factory=lambda: (
+            "DISCLAIMER: This calculation is based on IEC 60364-5-52 guidelines. "
+            "Always verify cable specifications with manufacturer data and local "
+            "regulations. This tool is for preliminary design purposes only."
+        )
+    )

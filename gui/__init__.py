@@ -1,4 +1,5 @@
 """GUI module for VoltGuard."""
+
 import sys
 from pathlib import Path
 

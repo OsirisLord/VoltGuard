@@ -4,11 +4,12 @@ Cable sizing calculator.
 Implements the core calculation logic for cable sizing based on
 ampacity, voltage drop, and short-circuit requirements per IEC 60364-5-52.
 """
+
 import math
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -105,19 +106,22 @@ class CableSizingCalculator:
         reactance = self._get_reactance(index) / self.inputs.parallel_runs
 
         impedance_drop = (
-            resistance * self.inputs.power_factor +
-            reactance * self.inputs.sin_phi
+            resistance * self.inputs.power_factor + reactance * self.inputs.sin_phi
         )
 
         if self.inputs.phase_system == PhaseSystem.THREE_PHASE:
             delta_v = (
-                math.sqrt(3) * self.inputs.design_current *
-                impedance_drop * self.inputs.cable_length
+                math.sqrt(3)
+                * self.inputs.design_current
+                * impedance_drop
+                * self.inputs.cable_length
             ) / 1000
         else:
             delta_v = (
-                2 * self.inputs.design_current *
-                impedance_drop * self.inputs.cable_length
+                2
+                * self.inputs.design_current
+                * impedance_drop
+                * self.inputs.cable_length
             ) / 1000
 
         return delta_v
@@ -188,7 +192,9 @@ class CableSizingCalculator:
         size = CABLE_SIZES[index]
         base_ampacity = self._get_base_ampacity()[index]
         # For parallel cables, total ampacity is multiplied
-        effective_ampacity = base_ampacity * self.total_derating * self.inputs.parallel_runs
+        effective_ampacity = (
+            base_ampacity * self.total_derating * self.inputs.parallel_runs
+        )
 
         # Voltage drop calculation
         delta_v = self._calculate_voltage_drop(index)
@@ -234,8 +240,7 @@ class CableSizingCalculator:
         """
         if self._results is None:
             self._results = [
-                self.calculate_for_size(i)
-                for i in range(len(CABLE_SIZES))
+                self.calculate_for_size(i) for i in range(len(CABLE_SIZES))
             ]
         return self._results
 
@@ -252,7 +257,9 @@ class CableSizingCalculator:
                 return result
         return None
 
-    def get_chart_data(self) -> Tuple[List[float], List[float], List[float]]:
+    def get_chart_data(
+        self,
+    ) -> Tuple[Sequence[float], Sequence[float], Sequence[float]]:
         """
         Get data for plotting charts.
 
