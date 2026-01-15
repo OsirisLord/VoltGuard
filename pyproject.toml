@@ -6,3 +6,9 @@ requires-python = ">=3.13"
 dependencies = [
     "uv>=0.9.25",
 ]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.18.0",
+    "pytest>=9.0.2",
+]

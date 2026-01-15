@@ -71,13 +71,15 @@ class PDFReport(FPDF):
         self.cell(0, 10, f'Page {self.page_no()}/{{nb}}', align='C')
 
 
-def export_to_pdf(report: CalculationReport, filepath: str) -> None:
+def export_to_pdf(report: CalculationReport, filepath: str, engineer_name: Optional[str] = None, approver_name: Optional[str] = None) -> None:
     """
     Export calculation results to PDF file.
 
     Args:
         report: CalculationReport with all data.
         filepath: Path to save PDF file.
+        engineer_name: Optional name of the design engineer.
+        approver_name: Optional name of the approver.
     """
     pdf = PDFReport()
     pdf.alias_nb_pages()
@@ -205,6 +207,46 @@ def export_to_pdf(report: CalculationReport, filepath: str) -> None:
     pdf.cell(0, 8, 'Disclaimer', new_x='LMARGIN', new_y='NEXT')
     pdf.set_font('Helvetica', 'I', 8)
     pdf.multi_cell(0, 4, report.disclaimer)
+
+    pdf.ln(10)
+
+    # Formal Sign-off Section
+    pdf.set_font('Helvetica', 'B', 12)
+    pdf.cell(0, 8, 'Project Approval', new_x='LMARGIN', new_y='NEXT')
+    pdf.ln(5)
+
+    # Save current Y position
+    start_y = pdf.get_y()
+    
+    # Check if page break is needed for the signature block (approx 40mm height)
+    if pdf.h - start_y < 50:
+        pdf.add_page()
+        start_y = pdf.get_y()
+
+    # Left block: Designed By
+    pdf.set_font('Helvetica', 'B', 10)
+    pdf.cell(90, 6, 'Designed By:', new_x='RIGHT')
+    # Right block: Approved By
+    pdf.cell(0, 6, 'Approved By:', new_x='LMARGIN', new_y='NEXT')
+
+    pdf.ln(2)
+
+    # Names
+    pdf.set_font('Helvetica', '', 10)
+    pdf.cell(90, 6, f'Name: {engineer_name if engineer_name else "____________________"}', new_x='RIGHT')
+    pdf.cell(0, 6, f'Name: {approver_name if approver_name else "____________________"}', new_x='LMARGIN', new_y='NEXT')
+
+    pdf.ln(2)
+
+    # Dates
+    pdf.cell(90, 6, 'Date:   ____________________', new_x='RIGHT')
+    pdf.cell(0, 6, 'Date:   ____________________', new_x='LMARGIN', new_y='NEXT')
+
+    pdf.ln(10)
+
+    # Signatures
+    pdf.cell(90, 6, 'Signature: ____________________', new_x='RIGHT')
+    pdf.cell(0, 6, 'Signature: ____________________', new_x='LMARGIN', new_y='NEXT')
 
     # Save PDF
     pdf.output(filepath)

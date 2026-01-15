@@ -14,7 +14,7 @@ datas.append(('assets', 'assets'))
 
 
 a = Analysis(
-    ['main.py'],
+    ['gui/app.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,

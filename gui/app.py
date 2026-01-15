@@ -61,7 +61,11 @@ class CableSizingApp(ctk.CTk):
         self.header_frame = ctk.CTkFrame(self, height=80, corner_radius=0)
         
         # Load logo
-        assets_path = Path(__file__).parent.parent / "assets"
+        if hasattr(sys, "_MEIPASS"):
+            assets_path = Path(sys._MEIPASS) / "assets"
+        else:
+            assets_path = Path(__file__).parent.parent / "assets"
+            
         logo_path = assets_path / "logo_banner.png"
         
         try:
@@ -210,3 +214,8 @@ class CableSizingApp(ctk.CTk):
     def run(self) -> None:
         """Run the application main loop."""
         self.mainloop()
+
+
+if __name__ == "__main__":
+    app = CableSizingApp()
+    app.run()

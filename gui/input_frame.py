@@ -346,28 +346,67 @@ class InputFrame(ctk.CTkScrollableFrame):
             self.depth_label.grid_remove()
             self.depth_menu.grid_remove()
 
-    def _get_float(self, entry: ctk.CTkEntry, default: float = 0.0) -> float:
-        """Get float value from entry widget."""
+    def _parse_input(self, entry: ctk.CTkEntry, name: str, default_val: float = None) -> float:
+        """
+        Parse float value from entry with validation.
+        
+        Args:
+            entry: Entry widget to read from.
+            name: Display name for error messages.
+            default_val: Value to use if entry is empty. If None, field is required.
+            
+        Returns:
+            Parsed float value.
+            
+        Raises:
+            ValueError: If input is invalid or missing (and no default).
+        """
+        text = entry.get().strip()
+        
+        if not text:
+            if default_val is not None:
+                return default_val
+            raise ValueError(f"{name} is required.")
+            
         try:
-            value = entry.get().strip()
-            return float(value) if value else default
+            return float(text)
         except ValueError:
-            return default
+            raise ValueError(f"{name} must be a valid number.")
 
     def _on_calculate_click(self) -> None:
         """Handle calculate button click."""
         self.error_label.configure(text="")
 
         try:
-            # Parse material
+            # Parse inputs with strict validation
+            design_current = self._parse_input(self.current_entry, "Design Current")
+            cable_length = self._parse_input(self.length_entry, "Cable Length")
+            
+            # Parse inputs with defaults
+            pf = self._parse_input(self.pf_entry, "Power Factor", default_val=0.85)
+            kt = self._parse_input(self.temp_entry, "Temperature Factor", default_val=1.0)
+            kg = self._parse_input(self.group_entry, "Grouping Factor", default_val=1.0)
+            ks = self._parse_input(self.soil_entry, "Soil Factor", default_val=1.0)
+            
+            isc = self._parse_input(self.isc_entry, "Short-Circuit Current", default_val=0.0)
+            fault_time = self._parse_input(self.fault_entry, "Fault Time", default_val=1.0)
+            
+            # Optional cost
+            cost_text = self.cost_override_entry.get().strip()
+            cost_override = None
+            if cost_text:
+                try:
+                    cost_override = float(cost_text)
+                except ValueError:
+                    raise ValueError("Cost must be a valid number.")
+
+            # Parse enums
             material = (Material.COPPER if self.material_var.get() == "Copper"
                        else Material.ALUMINUM)
 
-            # Parse insulation
             insulation = (InsulationType.XLPE_90C if "XLPE" in self.insulation_var.get()
                          else InsulationType.PVC_70C)
 
-            # Parse installation
             install_val = self.install_var.get()
             if "Method C" in install_val:
                 installation = InstallationMethod.METHOD_C
@@ -378,7 +417,6 @@ class InputFrame(ctk.CTkScrollableFrame):
             else:
                 installation = InstallationMethod.METHOD_F
 
-            # Parse burial depth
             depth_val = self.depth_var.get()
             if "0.5" in depth_val:
                 burial_depth = BurialDepth.DEPTH_0_5M
@@ -387,27 +425,21 @@ class InputFrame(ctk.CTkScrollableFrame):
             else:
                 burial_depth = BurialDepth.DEPTH_0_7M
 
-            # Parse phase
             phase_system = (PhaseSystem.THREE_PHASE if "3-Phase" in self.phase_var.get()
                            else PhaseSystem.SINGLE_PHASE)
 
-            # Parse parallel runs
             parallel_runs = int(self.parallel_var.get())
 
-            # Parse custom cost
-            cost_str = self.cost_override_entry.get().strip()
-            cost_override = float(cost_str) if cost_str else None
-
-            # Create input
+            # Create input object
             inputs = CableInput(
-                design_current=self._get_float(self.current_entry),
-                cable_length=self._get_float(self.length_entry),
-                power_factor=self._get_float(self.pf_entry, 0.85),
-                temp_factor=self._get_float(self.temp_entry, 1.0),
-                group_factor=self._get_float(self.group_entry, 1.0),
-                soil_factor=self._get_float(self.soil_entry, 1.0),
-                short_circuit_current=self._get_float(self.isc_entry) * 1000,
-                fault_time=self._get_float(self.fault_entry, 1.0),
+                design_current=design_current,
+                cable_length=cable_length,
+                power_factor=pf,
+                temp_factor=kt,
+                group_factor=kg,
+                soil_factor=ks,
+                short_circuit_current=isc * 1000, # Convert kA to A
+                fault_time=fault_time,
                 material=material,
                 insulation=insulation,
                 installation=installation,
@@ -417,7 +449,7 @@ class InputFrame(ctk.CTkScrollableFrame):
                 cost_per_meter=cost_override,
             )
 
-            # Validate
+            # Domain validation (business rules)
             error = inputs.validate()
             if error:
                 self.error_label.configure(text=f"Error: {error}")
@@ -425,5 +457,7 @@ class InputFrame(ctk.CTkScrollableFrame):
 
             self.on_calculate(inputs)
 
+        except ValueError as e:
+            self.error_label.configure(text=f"Input Error: {str(e)}")
         except Exception as e:  # pylint: disable=broad-exception-caught
-            self.error_label.configure(text=f"Error: {str(e)}")
+            self.error_label.configure(text=f"System Error: {str(e)}")
